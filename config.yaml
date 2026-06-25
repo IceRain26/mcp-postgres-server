@@ -1,0 +1,11 @@
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: secret
+  dbname: testdb
+  sslmode: disable
+
+server:
+  name: "postgres-mcp"
+  version: "1.0.0"
