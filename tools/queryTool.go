@@ -28,13 +28,32 @@ func QueryTool(ctx context.Context, req *mcp.CallToolRequest, input *QueryInput)
 		return nil, QueryOutput{}, fmt.Errorf("only SELECT queries are allowed")
 	}
 
-	// Security against Dangerous keywords
-	dangerousKeywords := []string{"insert", "update", "delete", "drop", "alter", "create", "truncate"}
-	for _, keyword := range dangerousKeywords {
-		if strings.Contains(sqlLower, keyword){
-			return nil, QueryOutput{}, fmt.Errorf("dangerous keyword detected in query: %s", keyword)
+	// Whitelisting Allowed Prefixes
+	allowedPrefixes := []string{
+		"select",
+		"with",
+	}
+
+	allowed := false
+	for _, prefix := range allowedPrefixes {
+		if strings.HasPrefix(sqlLower, prefix) {
+			allowed = true
+			break
 		}
 	}
+
+	if !allowed {
+		return nil, QueryOutput{}, fmt.Errorf("Only SELECT queries are allowed %s", input.SQL)
+	}
+
+	//////////////////// Dangerous words filtering //////////////////// 
+
+	//dangerousKeywords := []string{"insert", "update", "delete", "drop", "alter", "create", "truncate"}
+	//for _, keyword := range allowedPrefixes {
+	//	if strings.Contains(sqlLower, keyword){
+	//		return nil, QueryOutput{}, fmt.Errorf("dangerous keyword detected in query: %s", keyword)
+	//	}
+	//}
 
 	rows, err := database.DB.QueryContext(ctx, input.SQL)
 	if err != nil {
